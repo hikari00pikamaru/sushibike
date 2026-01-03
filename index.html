@@ -23,41 +23,85 @@
       overflow: hidden;
     }
 
+    /* 茶色の塀 */
+    .wall {
+      position: absolute;
+      top: 0;
+      width: 120px;
+      height: 100%;
+      background: linear-gradient(to bottom, #8b5a2b, #6f3f1a);
+      z-index: 5;
+    }
+    .wall.left { left: 0; border-right: 3px solid #3b1f0b; }
+    .wall.right { right: 0; border-left: 3px solid #3b1f0b; }
+
+    /* 通過中のバイク */
     #bike {
       position: absolute;
       top: 90px;
-      right: -300px;
+      right: -350px;
       display: flex;
       align-items: center;
       gap: 10px;
       visibility: hidden;
+      z-index: 3;
     }
 
-    #bike img {
+    #bike img { image-rendering: pixelated; }
+    #sushi { width: 80px; }
+    #bikeImg { width: 120px; }
+
+    /* 回答後のリプレイ表示 */
+    #replay {
+      display: none;
+      margin-top: 15px;
+    }
+
+    #replayInner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    #replayInner img {
       image-rendering: pixelated;
     }
 
-    #sushi {
-      width: 80px;
-      height: auto;
+    #replaySushi { width: 80px; }
+    #replayBike { width: 140px; }
+
+    #message {
+      font-size: 18px;
+      font-weight: bold;
     }
 
-    #bikeImg {
-      width: 120px;
-      height: auto;
+    /* 選択肢 */
+    #choices {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 10px;
     }
 
-    #choices button {
-      margin: 6px;
-      padding: 10px 18px;
-      font-size: 16px;
+    .choiceBtn {
+      background: #222;
+      border: 2px solid #555;
+      color: #fff;
+      padding: 8px;
+      width: 130px;
       cursor: pointer;
     }
 
-    #result {
-      margin-top: 10px;
-      font-weight: bold;
+    .choiceBtn img {
+      width: 80px;
+      display: block;
+      margin: 0 auto 4px;
     }
+
+    .choiceBtn:hover { border-color: #fff; }
   </style>
 </head>
 
@@ -66,6 +110,9 @@
 <h1>今通った寿司なーんだ？</h1>
 
 <div id="gameArea">
+  <div class="wall left"></div>
+  <div class="wall right"></div>
+
   <div id="bike">
     <img id="sushi" src="" alt="寿司">
     <img id="bikeImg" src="バイク_01.png" alt="バイク">
@@ -73,7 +120,15 @@
 </div>
 
 <div id="choices"></div>
-<div id="result"></div>
+
+<!-- 回答後表示 -->
+<div id="replay">
+  <div id="replayInner">
+    <img id="replaySushi" src="" alt="寿司">
+    <img id="replayBike" src="バイク_01.png" alt="バイク">
+  </div>
+  <div id="message"></div>
+</div>
 
 <button onclick="startGame()">スタート</button>
 
@@ -88,21 +143,20 @@
   let correctSushi = null;
 
   function startGame() {
-    document.getElementById("result").textContent = "";
     document.getElementById("choices").innerHTML = "";
+    document.getElementById("replay").style.display = "none";
 
     correctSushi = sushiList[Math.floor(Math.random() * sushiList.length)];
 
     const bike = document.getElementById("bike");
     const sushiImg = document.getElementById("sushi");
-
     sushiImg.src = correctSushi.file;
 
-    let position = -300;
+    let position = -350;
     const speed = 35;
     const exitPosition = 900;
-    const visibleStart = 250;
-    const visibleEnd = 420;
+    const visibleStart = 140;
+    const visibleEnd = 440;
 
     bike.style.right = position + "px";
     bike.style.visibility = "hidden";
@@ -130,20 +184,32 @@
 
     sushiList.forEach(sushi => {
       const btn = document.createElement("button");
-      btn.textContent = sushi.name;
-      btn.onclick = () => checkAnswer(sushi.name);
+      btn.className = "choiceBtn";
+      btn.innerHTML = `
+        <img src="${sushi.file}" alt="${sushi.name}">
+        <div>${sushi.name}</div>
+      `;
+      btn.onclick = () => checkAnswer(sushi);
       choicesDiv.appendChild(btn);
     });
   }
 
-  function checkAnswer(answer) {
-    const result = document.getElementById("result");
+  function checkAnswer(selectedSushi) {
+    document.getElementById("choices").innerHTML = "";
 
-    if (answer === correctSushi.name) {
-      result.textContent = "正解！";
+    const replay = document.getElementById("replay");
+    const replaySushi = document.getElementById("replaySushi");
+    const message = document.getElementById("message");
+
+    replaySushi.src = correctSushi.file;
+
+    if (selectedSushi.name === correctSushi.name) {
+      message.textContent = "ヘイ！お待ち！";
     } else {
-      result.textContent = "不正解！ 正解は「" + correctSushi.name + "」";
+      message.textContent = "この寿司は渡せねぇなぁ！";
     }
+
+    replay.style.display = "block";
   }
 </script>
 
